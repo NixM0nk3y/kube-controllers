@@ -34,6 +34,9 @@ ARCH ?= $(BUILDARCH)
 ifeq ($(ARCH),aarch64)
         override ARCH=arm64
 endif
+ifeq ($(ARCH),armv7)
+        override ARCH=arm
+endif
 ifeq ($(ARCH),x86_64)
     override ARCH=amd64
 endif
@@ -55,6 +58,9 @@ ETCD_IMAGE?=quay.io/coreos/etcd:$(ETCD_VERSION)-$(BUILDARCH)
 # If building on amd64 omit the arch in the container name.
 ifeq ($(BUILDARCH),amd64)
         ETCD_IMAGE=quay.io/coreos/etcd:$(ETCD_VERSION)
+endif
+ifeq ($(BUILDARCH),armv7)
+        ETCD_IMAGE=gcr.io/google_containers/etcd-arm:3.1.17
 endif
 
 # Makefile configuration options
@@ -137,7 +143,7 @@ bin/kube-controllers-linux-$(ARCH): vendor $(SRCFILES)
 	mkdir -p bin
 	-mkdir -p .go-pkg-cache
 	docker run --rm \
-	  -e GOOS=$(OS) -e GOARCH=$(ARCH) \
+	  -e GOOS=$(OS) -e GOARCH=$(ARCH) -e GOARM=7 \
 	  -v $(CURDIR):/go/src/$(PACKAGE_NAME):ro \
 	  -v $(CURDIR)/bin:/go/src/$(PACKAGE_NAME)/bin \
 	  -w /go/src/$(PACKAGE_NAME) \
@@ -150,7 +156,7 @@ bin/check-status-linux-$(ARCH): vendor $(SRCFILES)
 	mkdir -p bin
 	-mkdir -p .go-pkg-cache
 	docker run --rm \
-	  -e GOOS=$(OS) -e GOARCH=$(ARCH) \
+	  -e GOOS=$(OS) -e GOARCH=$(ARCH) -e GOARM=7 \
 	  -v $(CURDIR):/go/src/$(PACKAGE_NAME):ro \
 	  -v $(CURDIR)/bin:/go/src/$(PACKAGE_NAME)/bin \
 	  -w /go/src/$(PACKAGE_NAME) \
